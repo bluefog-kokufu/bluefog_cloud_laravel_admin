@@ -167,9 +167,14 @@ class ProvisioningService
         $this->run(['php', 'artisan', 'key:generate', '--force'], $path, $tenantEnv);
     }
 
+    /**
+     * 本番テナントにDatabaseSeeder(ローカル開発用のサンプル顧客・売上等)を投入すると
+     * 契約企業に架空データが見えてしまうため、自社情報1行のみを作るProductionSeederを使う
+     */
     private function runMigrations(string $path, array $tenantEnv): void
     {
-        $this->run(['php', 'artisan', 'migrate', '--seed', '--force'], $path, $tenantEnv);
+        $this->run(['php', 'artisan', 'migrate', '--force'], $path, $tenantEnv);
+        $this->run(['php', 'artisan', 'db:seed', '--class=ProductionSeeder', '--force'], $path, $tenantEnv);
     }
 
     /**
