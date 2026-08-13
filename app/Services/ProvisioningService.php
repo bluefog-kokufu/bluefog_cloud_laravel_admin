@@ -86,6 +86,9 @@ class ProvisioningService
         return [
             'APP_NAME' => $company->name,
             'APP_ENV' => 'production',
+            // 空でも行として存在させておく必要がある。key:generate --forceは既存のAPP_KEY=行を
+            // 正規表現で置換する実装のため、行自体が無いと生成した鍵を書き込めない
+            'APP_KEY' => '',
             'APP_DEBUG' => 'false',
             'APP_URL' => $this->tenantUrl($company),
             'DB_CONNECTION' => 'mysql',
