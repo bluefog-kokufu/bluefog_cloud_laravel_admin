@@ -69,9 +69,18 @@ class ProvisioningService
         return 'laravel_'.str_replace('-', '_', $company->slug);
     }
 
+    /**
+     * テナントの公開URL(APP_URL・メール内リンク等に使う)を組み立てる。
+     * ローカル環境はTLS証明書が無くdocker-composeの公開ポートも必要なため、
+     * TENANT_APACHE_SCHEME/TENANT_APACHE_PORTで上書きできるようにしている
+     */
     private function tenantUrl(Company $company): string
     {
-        return 'https://'.$company->slug.'.'.config('tenant.apache_domain');
+        $scheme = config('tenant.apache_scheme');
+        $port = config('tenant.apache_port');
+        $host = $company->slug.'.'.config('tenant.apache_domain');
+
+        return "{$scheme}://{$host}".($port ? ":{$port}" : '');
     }
 
     private function cloneRepository(Company $company, string $path): void
@@ -127,7 +136,13 @@ class ProvisioningService
             'SESSION_DRIVER' => 'database',
             'CACHE_STORE' => 'database',
             'QUEUE_CONNECTION' => 'database',
-            'MAIL_MAILER' => 'log',
+            'MAIL_MAILER' => 'smtp',
+            'MAIL_HOST' => config('tenant.tenant_mail.host'),
+            'MAIL_PORT' => (string) config('tenant.tenant_mail.port'),
+            'MAIL_USERNAME' => config('tenant.tenant_mail.username'),
+            'MAIL_PASSWORD' => config('tenant.tenant_mail.password'),
+            'MAIL_FROM_ADDRESS' => config('tenant.tenant_mail.from_address'),
+            'MAIL_FROM_NAME' => $company->name,
             'INTERNAL_BOOTSTRAP_SECRET' => $company->bootstrap_token,
         ];
     }

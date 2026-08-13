@@ -36,6 +36,13 @@ return [
     // ワイルドカードvhost/DNSで解決するベースドメイン({slug}.{apache_domain})。公開URLの生成(APP_URL等)に使う
     'apache_domain' => env('TENANT_APACHE_DOMAIN', 'bluefog-cloud.test'),
 
+    // 公開URLのスキーム。本番はhttps(既定)、ローカルはTLS証明書が無いためhttpに変更する
+    'apache_scheme' => env('TENANT_APACHE_SCHEME', 'https'),
+
+    // 公開URLに付けるポート番号。本番は443/80で省略するためnull(既定)、ローカルはdocker-composeで
+    // 公開しているポート(8080)を指定する
+    'apache_port' => env('TENANT_APACHE_PORT'),
+
     // 内部bootstrap API呼び出し用。公開DNS/TLSに依存せずdocker-compose内のwebサービスへ直接接続する
     // (Hostヘッダーでテナントを指定し、Apacheのワイルドカードvhostに解決させる)
     'internal_web_url' => env('TENANT_INTERNAL_WEB_URL', 'http://web'),
@@ -46,6 +53,15 @@ return [
         'port' => env('TENANT_DB_PORT', env('DB_PORT', '3306')),
         'username' => env('TENANT_DB_USERNAME', env('DB_USERNAME', 'root')),
         'password' => env('TENANT_DB_PASSWORD', env('DB_PASSWORD', '')),
+    ],
+
+    // テナントのパスワード初期設定メール等を実送信するためのSMTP設定
+    'tenant_mail' => [
+        'host' => env('TENANT_MAIL_HOST'),
+        'port' => env('TENANT_MAIL_PORT', 587),
+        'username' => env('TENANT_MAIL_USERNAME'),
+        'password' => env('TENANT_MAIL_PASSWORD'),
+        'from_address' => env('TENANT_MAIL_FROM_ADDRESS'),
     ],
 
 ];
