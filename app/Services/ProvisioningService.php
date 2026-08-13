@@ -199,7 +199,12 @@ class ProvisioningService
      */
     private function callBootstrapApi(Company $company): void
     {
+        // front側はメールリンク等をroute()ヘルパー(=リクエストのHostヘッダー)から生成するため、
+        // ここにもtenantUrl()と同じポートを含めておかないとリンクからポートが欠落する
         $host = $company->slug.'.'.config('tenant.apache_domain');
+        if ($port = config('tenant.apache_port')) {
+            $host .= ":{$port}";
+        }
 
         $response = Http::withToken($company->bootstrap_token)
             ->withHeaders(['Host' => $host])
