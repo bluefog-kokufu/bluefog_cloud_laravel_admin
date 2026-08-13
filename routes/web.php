@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\NoticeController;
@@ -20,4 +21,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('admin.logout');
     Route::resource('notices', NoticeController::class)->names('admin.notices');
+    Route::resource('companies', CompanyController::class)->names('admin.companies');
+    Route::post('companies/{company}/provision', [CompanyController::class, 'provision'])->name('admin.companies.provision');
 });
