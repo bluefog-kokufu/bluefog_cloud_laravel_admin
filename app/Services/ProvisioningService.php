@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use RuntimeException;
@@ -45,6 +46,19 @@ class ProvisioningService
         }
     }
 
+    /**
+     * 失敗したプロビジョニングを再実行する前に、途中まで生成されたディレクトリ・DBを削除する
+     */
+    public function cleanupPartialState(Company $company): void
+    {
+        $path = $this->tenantPath($company);
+        if (is_dir($path)) {
+            File::deleteDirectory($path);
+        }
+
+        DB::statement("DROP DATABASE IF EXISTS `{$this->databaseName($company)}`");
+    }
+
     private function tenantPath(Company $company): string
     {
         return rtrim(config('tenant.tenants_path'), '/').'/'.$company->slug;
@@ -64,6 +78,12 @@ class ProvisioningService
     {
         if (is_dir($path)) {
             throw new RuntimeException("clone先が既に存在します: {$path}");
+        }
+
+        // マウント直後等でtenants親ディレクトリの存在確認に失敗する場合があるため、clone前に保証しておく
+        $parentDir = dirname($path);
+        if (! is_dir($parentDir) && ! mkdir($parentDir, 0755, true) && ! is_dir($parentDir)) {
+            throw new RuntimeException("テナント用ディレクトリを作成できません: {$parentDir}");
         }
 
         $this->run(['git', 'clone', '--depth', '1', config('tenant.repository_url'), $path]);
@@ -97,6 +117,13 @@ class ProvisioningService
             'DB_DATABASE' => $this->databaseName($company),
             'DB_USERNAME' => config('tenant.tenant_db.username'),
             'DB_PASSWORD' => config('tenant.tenant_db.password'),
+            // front側のホーム画面「お知らせ」表示はadmin側laravel_admin DBのnoticesテーブルを
+            // 直接参照する(App\Models\Noticeのconnection='admin_mysql')ため、この接続情報も必須
+            'ADMIN_DB_HOST' => config('tenant.tenant_db.host'),
+            'ADMIN_DB_PORT' => (string) config('tenant.tenant_db.port'),
+            'ADMIN_DB_DATABASE' => 'laravel_admin',
+            'ADMIN_DB_USERNAME' => config('tenant.tenant_db.username'),
+            'ADMIN_DB_PASSWORD' => config('tenant.tenant_db.password'),
             'SESSION_DRIVER' => 'database',
             'CACHE_STORE' => 'database',
             'QUEUE_CONNECTION' => 'database',

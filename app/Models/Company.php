@@ -12,6 +12,7 @@ class Company extends Model
     /** プロビジョニング状況の選択肢 */
     public const PROVISION_STATUSES = [
         'pending' => '未着手',
+        'processing' => '実行中',
         'active' => '稼働中',
         'failed' => '失敗',
     ];

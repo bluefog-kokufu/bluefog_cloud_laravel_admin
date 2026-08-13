@@ -56,6 +56,11 @@
             @csrf
             <button class="btn accent" type="submit">プロビジョニング開始</button>
         </form>
+        @elseif ($company->provision_status === 'failed')
+        <form action="{{ route('admin.companies.provision', $company) }}" method="POST" onsubmit="return confirm('途中まで生成されたファイル・DBを削除して、最初からプロビジョニングをやり直します。よろしいですか？');">
+            @csrf
+            <button class="btn accent" type="submit">プロビジョニングを再実行</button>
+        </form>
         @endif
         <a class="btn" href="{{ route('admin.companies.edit', $company) }}">編集</a>
         <a class="btn ghost" href="{{ route('admin.companies.index') }}">一覧へ戻る</a>

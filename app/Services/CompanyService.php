@@ -11,7 +11,10 @@ use RuntimeException;
 
 class CompanyService
 {
-    public function __construct(private readonly CompanyRepositoryInterface $companies) {}
+    public function __construct(
+        private readonly CompanyRepositoryInterface $companies,
+        private readonly ProvisioningService $provisioningService,
+    ) {}
 
     public function paginate(): LengthAwarePaginator
     {
@@ -52,13 +55,23 @@ class CompanyService
     }
 
     /**
-     * front側環境の自動生成ジョブをキューへ投入する。未着手状態からのみ実行できる
+     * front側環境の自動生成ジョブをキューへ投入する。未着手・失敗状態からのみ実行できる。
+     * 失敗からの再実行の場合、途中まで生成された可能性のあるディレクトリ・DBを先に片付けてから
+     * 最初からやり直す(cloneRepositoryはclone先が既に存在すると失敗するため)。
+     * 実行中は「実行中(processing)」へ即座に変更してボタンを消し、二重実行(お互いのディレクトリ・DBを
+     * 壊し合うレース)を防ぐ
      */
     public function startProvisioning(Company $company): void
     {
-        if ($company->provision_status !== 'pending') {
-            throw new RuntimeException('未着手のテナントのみプロビジョニングを開始できます。');
+        if (! in_array($company->provision_status, ['pending', 'failed'], true)) {
+            throw new RuntimeException('未着手または失敗状態のテナントのみプロビジョニングを開始できます。');
         }
+
+        if ($company->provision_status === 'failed') {
+            $this->provisioningService->cleanupPartialState($company);
+        }
+
+        $this->companies->update($company, ['provision_status' => 'processing', 'provision_error' => null]);
 
         ProvisionTenantJob::dispatch($company->id);
     }
