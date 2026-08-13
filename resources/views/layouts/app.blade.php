@@ -25,9 +25,9 @@
             <nav class="side">
                 <div class="navttl">MENU</div>
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">ホーム</a>
+                <a href="{{ route('admin.notices.index') }}" class="{{ request()->routeIs('admin.notices.*') ? 'active' : '' }}">お知らせ配信管理</a>
                 <div class="navttl">今後実装予定</div>
                 <a class="disabled">契約企業管理</a>
-                <a class="disabled">お知らせ配信管理</a>
                 <a class="disabled">スタッフアカウント管理</a>
             </nav>
             <main id="page">
