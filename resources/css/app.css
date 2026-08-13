@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './common.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,4 +7,24 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* admin管理画面固有: 未実装メニューの表示 */
+nav.side a.disabled {
+    color: #5c7488;
+    cursor: default;
+}
+
+nav.side a.disabled:hover {
+    background: none;
+}
+
+nav.side a.disabled::after {
+    content: '準備中';
+    float: right;
+    font-size: 10px;
+    background: var(--navy-2);
+    color: #9db8cc;
+    border-radius: 3px;
+    padding: 1px 6px;
 }
