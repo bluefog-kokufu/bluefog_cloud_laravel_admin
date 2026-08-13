@@ -183,13 +183,13 @@ class ProvisioningService
     }
 
     /**
-     * 本番テナントにDatabaseSeeder(ローカル開発用のサンプル顧客・売上等)を投入すると
-     * 契約企業に架空データが見えてしまうため、自社情報1行のみを作るProductionSeederを使う
+     * front側の「デモデータを初期化」と同じDatabaseSeeder(サンプル顧客・売上・財務三表等)を投入し、
+     * プロビジョニング直後から機能を確認できる状態にする
      */
     private function runMigrations(string $path, array $tenantEnv): void
     {
         $this->run(['php', 'artisan', 'migrate', '--force'], $path, $tenantEnv);
-        $this->run(['php', 'artisan', 'db:seed', '--class=ProductionSeeder', '--force'], $path, $tenantEnv);
+        $this->run(['php', 'artisan', 'db:seed', '--class=DatabaseSeeder', '--force'], $path, $tenantEnv);
     }
 
     /**
